@@ -1,10 +1,14 @@
+use crate::{
+    AttributeValue, DynamoDb, DynamoDbClient, TransactWriteItemsInput, TransactWriteItemsOutput,
+};
+
+use async_trait::async_trait;
 use rusoto_core::request::BufferedHttpResponse;
 use rusoto_core::{proto, RusotoError};
 use serde::Deserialize;
 #[cfg(any(test, feature = "serialize_structs"))]
 use serde::Serialize;
 
-use crate::{AttributeValue, DynamoDbClient, TransactWriteItemsInput, TransactWriteItemsOutput};
 use std::error::Error;
 use std::fmt;
 
@@ -139,8 +143,17 @@ impl fmt::Display for TransactWriteItemsErrorWithCancellation {
 }
 impl Error for TransactWriteItemsErrorWithCancellation {}
 
-impl DynamoDbClient {
-    pub async fn transact_write_items_with_cancellation(
+#[async_trait]
+pub trait DynamoDbWithCancellation: DynamoDb {
+    async fn transact_write_items_with_cancellation(
+        &self,
+        input: TransactWriteItemsInput,
+    ) -> Result<TransactWriteItemsOutput, RusotoError<TransactWriteItemsErrorWithCancellation>>;
+}
+
+#[async_trait]
+impl DynamoDbWithCancellation for DynamoDbClient {
+    async fn transact_write_items_with_cancellation(
         &self,
         input: TransactWriteItemsInput,
     ) -> Result<TransactWriteItemsOutput, RusotoError<TransactWriteItemsErrorWithCancellation>>
