@@ -26,7 +26,7 @@ use rusoto_core::signature::SignedRequest;
 use serde::{Deserialize, Serialize};
 
 impl Ec2InstanceConnectClient {
-    fn new_signed_request(&self, http_method: &str, request_uri: &str) -> SignedRequest {
+    pub(crate) fn new_signed_request(&self, http_method: &str, request_uri: &str) -> SignedRequest {
         let mut request = SignedRequest::new(
             http_method,
             "ec2-instance-connect",
@@ -39,7 +39,7 @@ impl Ec2InstanceConnectClient {
         request
     }
 
-    async fn sign_and_dispatch<E>(
+    pub(crate) async fn sign_and_dispatch<E>(
         &self,
         request: SignedRequest,
         from_response: fn(BufferedHttpResponse) -> RusotoError<E>,

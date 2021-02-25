@@ -82,7 +82,7 @@ impl GenerateProtocol for JsonGenerator {
             writer,
             "
             impl {type_name} {{
-                fn new_signed_request(&self, http_method: &str, request_uri: &str) -> SignedRequest {{
+                pub(crate) fn new_signed_request(&self, http_method: &str, request_uri: &str) -> SignedRequest {{
                     let mut request = SignedRequest::new(http_method, \"{signing_name}\", &self.region, request_uri);
                     {modify_endpoint_prefix}
 
@@ -91,7 +91,7 @@ impl GenerateProtocol for JsonGenerator {
                     request
                 }}
 
-                async fn sign_and_dispatch<E>(
+                pub(crate) async fn sign_and_dispatch<E>(
                     &self,
                     request: SignedRequest,
                     from_response: fn (BufferedHttpResponse) -> RusotoError<E>,

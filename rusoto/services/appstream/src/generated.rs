@@ -26,7 +26,7 @@ use rusoto_core::signature::SignedRequest;
 use serde::{Deserialize, Serialize};
 
 impl AppStreamClient {
-    fn new_signed_request(&self, http_method: &str, request_uri: &str) -> SignedRequest {
+    pub(crate) fn new_signed_request(&self, http_method: &str, request_uri: &str) -> SignedRequest {
         let mut request = SignedRequest::new(http_method, "appstream", &self.region, request_uri);
         request.set_endpoint_prefix("appstream2".to_string());
 
@@ -35,7 +35,7 @@ impl AppStreamClient {
         request
     }
 
-    async fn sign_and_dispatch<E>(
+    pub(crate) async fn sign_and_dispatch<E>(
         &self,
         request: SignedRequest,
         from_response: fn(BufferedHttpResponse) -> RusotoError<E>,

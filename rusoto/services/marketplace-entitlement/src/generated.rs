@@ -26,7 +26,7 @@ use rusoto_core::signature::SignedRequest;
 use serde::{Deserialize, Serialize};
 
 impl MarketplaceEntitlementClient {
-    fn new_signed_request(&self, http_method: &str, request_uri: &str) -> SignedRequest {
+    pub(crate) fn new_signed_request(&self, http_method: &str, request_uri: &str) -> SignedRequest {
         let mut request =
             SignedRequest::new(http_method, "aws-marketplace", &self.region, request_uri);
         request.set_endpoint_prefix("entitlement.marketplace".to_string());
@@ -36,7 +36,7 @@ impl MarketplaceEntitlementClient {
         request
     }
 
-    async fn sign_and_dispatch<E>(
+    pub(crate) async fn sign_and_dispatch<E>(
         &self,
         request: SignedRequest,
         from_response: fn(BufferedHttpResponse) -> RusotoError<E>,

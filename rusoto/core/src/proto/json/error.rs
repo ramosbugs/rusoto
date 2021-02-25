@@ -1,14 +1,17 @@
+use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use serde_json::{from_slice, Value};
 
 use super::super::super::request::BufferedHttpResponse;
 
 #[derive(Deserialize)]
-struct RawError {
+struct RawError<E: DeserializeOwned> {
     #[serde(rename = "__type", default)]
     typ: Option<String>,
     #[serde(alias = "Message", default)]
     message: Option<String>,
+    #[serde(flatten, bound = "E: DeserializeOwned")]
+    ext: E,
 }
 
 pub struct Error {
@@ -16,9 +19,12 @@ pub struct Error {
     pub msg: String,
 }
 
+#[derive(Deserialize)]
+struct EmptyExt {}
+
 impl Error {
     pub fn parse(res: &BufferedHttpResponse) -> Option<Error> {
-        if let Ok(raw_err) = from_slice::<RawError>(&res.body) {
+        if let Ok(raw_err) = from_slice::<RawError<EmptyExt>>(&res.body) {
             let raw_error_type = raw_err.typ.unwrap_or_else(|| "Unknown".to_owned());
             let msg = raw_err.message.unwrap_or_default();
 
@@ -29,6 +35,26 @@ impl Error {
                 typ: (*typ).to_string(),
                 msg,
             })
+        } else {
+            None
+        }
+    }
+
+    pub fn parse_ext<E: DeserializeOwned>(res: &BufferedHttpResponse) -> Option<(Error, E)> {
+        if let Ok(raw_err) = from_slice::<RawError<E>>(&res.body) {
+            let raw_error_type = raw_err.typ.unwrap_or_else(|| "Unknown".to_owned());
+            let msg = raw_err.message.unwrap_or_default();
+
+            let pieces: Vec<&str> = raw_error_type.split('#').collect();
+            let typ = pieces.last().expect("Expected error type");
+
+            Some((
+                Error {
+                    typ: (*typ).to_string(),
+                    msg,
+                },
+                raw_err.ext,
+            ))
         } else {
             None
         }

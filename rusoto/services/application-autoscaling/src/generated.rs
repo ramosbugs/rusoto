@@ -26,7 +26,7 @@ use rusoto_core::signature::SignedRequest;
 use serde::{Deserialize, Serialize};
 
 impl ApplicationAutoScalingClient {
-    fn new_signed_request(&self, http_method: &str, request_uri: &str) -> SignedRequest {
+    pub(crate) fn new_signed_request(&self, http_method: &str, request_uri: &str) -> SignedRequest {
         let mut request = SignedRequest::new(
             http_method,
             "application-autoscaling",
@@ -39,7 +39,7 @@ impl ApplicationAutoScalingClient {
         request
     }
 
-    async fn sign_and_dispatch<E>(
+    pub(crate) async fn sign_and_dispatch<E>(
         &self,
         request: SignedRequest,
         from_response: fn(BufferedHttpResponse) -> RusotoError<E>,
